@@ -43,22 +43,30 @@ class ContractWrapper:
         Depending on `choice`, performs the call or invoke of the function
         identified with `entry_point_selector`, potentially passing in `calldata` and `signature`.
         """
-        function_mapping = self.contract._abi_function_mapping # pylint: disable=protected-access
-        for method_name in function_mapping:
-            selector = get_selector_from_name(method_name)
-            if selector == entry_point_selector:
-                try:
-                    method = getattr(self.contract, method_name)
-                except NotImplementedError as nie:
-                    raise StarknetDevnetException from nie
-                function_abi = function_mapping[method_name]
-                break
-        else:
-            raise StarknetDevnetException(message=f"Illegal method selector: {entry_point_selector}.")
+        execution_info = self.contract.state.invoke_raw(
+            address=self.contract.contract_address,
+            selector=entry_point_selector,
+            calldata=calldata,
+            caller_address=0,
+            max_fee=0,
+            signature=signature
+        )
+        # function_mapping = self.contract._abi_function_mapping # pylint: disable=protected-access
+        # for method_name in function_mapping:
+        #     selector = get_selector_from_name(method_name)
+        #     if selector == entry_point_selector:
+        #         try:
+        #             method = getattr(self.contract, method_name)
+        #         except NotImplementedError as nie:
+        #             raise StarknetDevnetException from nie
+        #         function_abi = function_mapping[method_name]
+        #         break
+        # else:
+        #     raise StarknetDevnetException(message=f"Illegal method selector: {entry_point_selector}.")
 
-        adapted_calldata = adapt_calldata(calldata, function_abi["inputs"], self.types)
+        # adapted_calldata = adapt_calldata(calldata, function_abi["inputs"], self.types)
 
-        prepared = method(*adapted_calldata)
-        called = getattr(prepared, choice.value)
-        execution_info: StarknetTransactionExecutionInfo = await called(signature=signature)
+        # prepared = method(*adapted_calldata)
+        # called = getattr(prepared, choice.value)
+        # execution_info: StarknetTransactionExecutionInfo = await called(signature=signature)
         return adapt_output(execution_info.result), execution_info

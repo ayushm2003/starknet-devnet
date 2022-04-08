@@ -203,7 +203,9 @@ class StarknetWrapper:
                 Choice.INVOKE,
                 entry_point_selector=invoke_transaction.entry_point_selector,
                 calldata=invoke_transaction.calldata,
-                signature=invoke_transaction.signature
+                signature=invoke_transaction.signature,
+                caller_address=invoke_transaction.caller_address,
+                max_fee=invoke_transaction.max_fee
             )
             status = TxStatus.ACCEPTED_ON_L2
             error_message = None
@@ -233,7 +235,9 @@ class StarknetWrapper:
             Choice.CALL,
             entry_point_selector=transaction.entry_point_selector,
             calldata=transaction.calldata,
-            signature=transaction.signature
+            signature=transaction.signature,
+            caller_address=0,
+            max_fee=transaction.max_fee
         )
 
         return { "result": adapted_result }

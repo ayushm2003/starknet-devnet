@@ -486,8 +486,11 @@ Exception:
 
         for message in l1_raw_messages:
             message["args"]["selector"] = hex(message["args"]["selector"])
-            message["args"]["to_address"] = fixed_length_hex(message["args"]["to_address"]) # L2 addresses need the leading 0
+            message["args"]["to_address"] = fixed_length_hex(message["args"]["toAddress"]) # L2 addresses need the leading 0
+            message["args"]["from_address"] = message["args"]["fromAddress"]
             message["args"]["payload"] = [hex(val) for val in message["args"]["payload"]]
+            del message["args"]["toAddress"]
+            del message["args"]["fromAddress"]
 
         l2_messages = []
         for message in l2_raw_messages:

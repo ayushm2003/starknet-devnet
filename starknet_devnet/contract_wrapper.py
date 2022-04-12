@@ -5,30 +5,11 @@ Contains code for wrapping StarknetContract instances.
 from dataclasses import dataclass
 from typing import List
 
-from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.services.api.contract_definition import ContractDefinition
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.utils.api_utils import cast_to_felts
 
 from starknet_devnet.util import Choice
-
-DEFAULT_SELECTOR = get_selector_from_name("__default__")
-
-def extract_types(abi):
-    """
-    Extracts the types (structs) used in the contract whose ABI is provided.
-    """
-
-    structs = [entry for entry in abi if entry["type"] == "struct"]
-    type_dict = { struct["name"]: struct for struct in structs }
-    return type_dict
-
-def extract_function_abis(function_mapping: dict):
-    """Extracts ABI of each function."""
-    selector2abi = {}
-    for method_name in function_mapping:
-        selector2abi[get_selector_from_name(method_name)] = function_mapping[method_name]
-    return selector2abi
 
 @dataclass
 class ContractWrapper:

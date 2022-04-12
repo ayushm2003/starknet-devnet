@@ -44,7 +44,7 @@ brew install gmp
 
 - Devnet should not be used as a replacement for Alpha testnet. After testing on Devnet, be sure to test on testnet (alpha-goerli)!
 - Specifying a block by its hash/number is not supported. All interaction is done with the latest block.
-- Read more in [interaction](#interaction-api).
+- Read more in [interaction](#interaction).
 
 ## Run
 

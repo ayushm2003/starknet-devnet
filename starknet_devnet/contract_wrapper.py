@@ -48,7 +48,7 @@ class ContractWrapper:
             calldata=calldata,
             caller_address=caller_address,
             max_fee=max_fee,
-            signature=None if signature is None else cast_to_felts(values=signature),
+            signature=signature and cast_to_felts(values=signature),
         )
 
         result = list(map(hex, execution_info.call_info.retdata))

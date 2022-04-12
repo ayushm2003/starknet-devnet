@@ -26,7 +26,7 @@ SIGNATURE = [
 BALANCE_KEY = "142452623821144136554572927896792266630776240502820879601186867231282346767"
 
 @pytest.mark.general_workflow
-@devnet_in_background
+@devnet_in_background()
 def test_general_workflow_auth():
     """Test CLI auth in devnet"""
 

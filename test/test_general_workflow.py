@@ -28,7 +28,7 @@ from .shared import (
 )
 
 @pytest.mark.general_workflow
-@devnet_in_background
+@devnet_in_background()
 def test_general_workflow():
     """Test devnet with CLI"""
     deploy_info = deploy(CONTRACT_PATH, ["0"])

@@ -8,11 +8,9 @@ from typing import List
 from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.services.api.contract_definition import ContractDefinition
 from starkware.starknet.testing.contract import StarknetContract
-from starkware.starknet.testing.objects import StarknetTransactionExecutionInfo
 from starkware.starknet.utils.api_utils import cast_to_felts
 
-from starknet_devnet.adapt import adapt_calldata, adapt_output
-from starknet_devnet.util import Choice, StarknetDevnetException
+from starknet_devnet.util import Choice
 
 DEFAULT_SELECTOR = get_selector_from_name("__default__")
 
@@ -46,12 +44,16 @@ class ContractWrapper:
             "bytecode": self.contract_definition["program"]["data"]
         }
 
-        self.types: dict = extract_types(contract_definition.abi)
-
-        # pylint: disable=protected-access
-        self.selector2abi: dict = extract_function_abis(self.contract._abi_function_mapping)
-
-    async def call_or_invoke(self, choice: Choice, entry_point_selector: int, calldata: List[int], signature: List[int], caller_address, max_fee):
+    # pylint: disable=too-many-arguments
+    async def call_or_invoke(
+        self,
+        choice: Choice,
+        entry_point_selector: int,
+        calldata: List[int],
+        signature: List[int],
+        caller_address: int,
+        max_fee: int
+    ):
         """
         Depending on `choice`, performs the call or invoke of the function
         identified with `entry_point_selector`, potentially passing in `calldata` and `signature`.
@@ -68,26 +70,5 @@ class ContractWrapper:
             signature=None if signature is None else cast_to_felts(values=signature),
         )
 
-        # execution_info = await state.invoke_raw(
-        #     contract_address=self.contract.contract_address,
-        #     selector=entry_point_selector,
-        #     calldata=calldata,
-        #     caller_address=0,# TODO
-        #     max_fee=0,# TODO
-        #     signature=signature
-        # )
-
-        # if entry_point_selector in self.selector2abi:
-        #     method_abi = self.selector2abi[entry_point_selector]
-        # elif DEFAULT_SELECTOR in self.selector2abi:
-        #     method_abi = self.selector2abi[DEFAULT_SELECTOR]
-        # else:
-        #     raise StarknetDevnetException(message=f"Illegal method selector: {entry_point_selector}.")
-
-        # method = getattr(self.contract, method_abi["name"])
-        # adapted_calldata = adapt_calldata(calldata, method_abi["inputs"], self.types)
-
-        # prepared = method(*adapted_calldata)
-        # called = getattr(prepared, choice.value)
-        # execution_info: StarknetTransactionExecutionInfo = await called(signature=signature)
-        return adapt_output(execution_info.call_info.retdata), execution_info
+        result = list(map(hex, execution_info.call_info.retdata))
+        return result, execution_info

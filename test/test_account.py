@@ -29,7 +29,7 @@ def deploy_empty_contract():
     return deploy(CONTRACT_PATH, inputs=["0"], salt=SALT)
 
 @pytest.mark.account
-@devnet_in_background
+@devnet_in_background()
 def test_account_contract_deploy():
     """Test account contract deploy, public key and initial nonce value."""
     deploy_info = deploy_account_contract(salt=SALT)
@@ -44,7 +44,7 @@ def test_account_contract_deploy():
     assert nonce == "0"
 
 @pytest.mark.account
-@devnet_in_background
+@devnet_in_background()
 def test_invoke_another_contract():
     """Test invoking another contract."""
     deploy_info = deploy_empty_contract()
@@ -66,6 +66,7 @@ def test_invoke_another_contract():
     assert balance == "30"
 
 @pytest.mark.account
+@devnet_in_background()
 def test_estimated_fee():
     """Test estimate fees."""
     deploy_info = deploy_empty_contract()
@@ -95,7 +96,7 @@ def test_estimated_fee():
     assert balance == initial_balance
 
 @pytest.mark.account
-@devnet_in_background
+@devnet_in_background()
 def test_low_max_fee():
     """Test if transaction is rejected with low max fee"""
     deploy_info = deploy_empty_contract()
@@ -118,7 +119,7 @@ def test_low_max_fee():
     assert balance == initial_balance
 
 @pytest.mark.account
-@devnet_in_background
+@devnet_in_background()
 def test_multicall():
     """Test making multiple calls."""
     deploy_info = deploy_empty_contract()

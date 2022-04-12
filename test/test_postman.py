@@ -5,7 +5,7 @@ Test postman usage. This test has one single pytest case, because the whole flow
 
 
 from test.settings import L1_URL, GATEWAY_URL
-from test.util import call, deploy, invoke, run_devnet_in_background, load_file_content
+from test.util import call, deploy, devnet_in_background, invoke, load_file_content
 from test.web3_util import web3_call, web3_deploy, web3_transact
 
 import time
@@ -27,9 +27,7 @@ L1L2_EXAMPLE_PATH = f"{ETH_CONTRACTS_PATH}/L1L2.sol/L1L2Example.json"
 
 @pytest.fixture(autouse=True)
 def run_before_and_after_test():
-    """Run devnet before and kill it after the test run"""
-    # Setup devnet
-    devnet_proc = run_devnet_in_background(sleep_seconds=5)
+    """Run l1 testnet before and kill it after the test run"""
     # Setup L1 testnet
     command = ["npx", "hardhat", "node"]
     # pylint: disable=consider-using-with
@@ -38,7 +36,6 @@ def run_before_and_after_test():
     yield
 
     # after test
-    devnet_proc.kill()
     l1_proc.kill()
 
 def init_messaging_contract():
@@ -182,6 +179,7 @@ def l1_l2_message_exchange(web3, l1l2_example_contract, l2_contract_address):
     assert l2_balance == "2933"
 
 @pytest.mark.web3_messaging
+@devnet_in_background()
 def test_postman():
     """Test postman with a complete L1<>L2 flow"""
     l1l2_example_contract = None

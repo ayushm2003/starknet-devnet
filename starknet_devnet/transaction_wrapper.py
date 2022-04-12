@@ -8,7 +8,8 @@ from dataclasses import dataclass
 from typing import List
 
 from starkware.starknet.business_logic.internal_transaction import InternalInvokeFunction
-from starkware.starknet.business_logic.execution.objects import CallInfo, Event, L2ToL1MessageInfo
+from starkware.starknet.business_logic.execution.objects import Event, L2ToL1MessageInfo
+from starkware.starknet.services.api.feeder_gateway.response_objects import FunctionInvocation
 from starkware.starknet.services.api.gateway.transaction import Deploy
 from starkware.starknet.definitions.error_codes import StarknetErrorCode
 from starkware.starknet.definitions.transaction_type import TransactionType
@@ -44,7 +45,7 @@ class InvokeTransactionDetails(TransactionDetails):
     entry_point_selector: str
     entry_point_type: str
 
-def process_events(events):
+def process_events(events: List[Event]):
     """Extract events and hex the content."""
 
     processed_events = []
@@ -64,7 +65,7 @@ class TransactionWrapper(ABC):
     def __init__(
         self,
         status: TxStatus,
-        call_info: CallInfo,
+        call_info: FunctionInvocation,
         tx_details: TransactionDetails,
         events: List[Event],
         l2_to_l1_messages: List[L2ToL1MessageInfo]
@@ -152,9 +153,12 @@ class InvokeTransactionWrapper(TransactionWrapper):
     """Wrapper of Invoke Transaction."""
 
     def __init__(self, internal_tx: InternalInvokeFunction, status: TxStatus, execution_info: TransactionExecutionInfo):
+        call_info = execution_info.call_info
+        if status is not TxStatus.REJECTED:
+            call_info = FunctionInvocation.from_internal_version(call_info)
         super().__init__(
             status,
-            execution_info.call_info,
+            call_info,
             InvokeTransactionDetails(
                 TransactionType.INVOKE_FUNCTION.name,
                 contract_address=fixed_length_hex(internal_tx.contract_address),

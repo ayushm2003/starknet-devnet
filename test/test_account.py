@@ -8,7 +8,7 @@ from .shared import ABI_PATH, CONTRACT_PATH
 from .util import (
     assert_tx_status,
     deploy,
-    run_devnet_in_background,
+    devnet_in_background,
     call,
     estimate_fee
 )
@@ -24,23 +24,12 @@ from .account import (
 ACCOUNT_ADDRESS = "0x066a91d591d5ba09d37f21fd526242c1ddc6dc6b0ce72b2482a4c6c033114e3a"
 SALT = "0x99"
 
-@pytest.fixture(autouse=True)
-def run_before_and_after_test():
-    """Cleanup after tests finish."""
-
-    # before test
-    devnet_proc = run_devnet_in_background()
-
-    yield
-
-    # after test
-    devnet_proc.kill()
-
 def deploy_empty_contract():
     """Deploy sample contract with balance = 0."""
     return deploy(CONTRACT_PATH, inputs=["0"], salt=SALT)
 
 @pytest.mark.account
+@devnet_in_background
 def test_account_contract_deploy():
     """Test account contract deploy, public key and initial nonce value."""
     deploy_info = deploy_account_contract(salt=SALT)
@@ -55,6 +44,7 @@ def test_account_contract_deploy():
     assert nonce == "0"
 
 @pytest.mark.account
+@devnet_in_background
 def test_invoke_another_contract():
     """Test invoking another contract."""
     deploy_info = deploy_empty_contract()
@@ -105,6 +95,7 @@ def test_estimated_fee():
     assert balance == initial_balance
 
 @pytest.mark.account
+@devnet_in_background
 def test_low_max_fee():
     """Test if transaction is rejected with low max fee"""
     deploy_info = deploy_empty_contract()
@@ -127,6 +118,7 @@ def test_low_max_fee():
     assert balance == initial_balance
 
 @pytest.mark.account
+@devnet_in_background
 def test_multicall():
     """Test making multiple calls."""
     deploy_info = deploy_empty_contract()

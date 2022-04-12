@@ -65,7 +65,7 @@ class TransactionWrapper(ABC):
     def __init__(
         self,
         status: TxStatus,
-        call_info: FunctionInvocation,
+        function_invocation: FunctionInvocation,
         tx_details: TransactionDetails,
         events: List[Event],
         l2_to_l1_messages: List[L2ToL1MessageInfo]
@@ -79,7 +79,7 @@ class TransactionWrapper(ABC):
         }
 
         self.receipt = {
-            "execution_resources": call_info.execution_resources,
+            "execution_resources": function_invocation.execution_resources,
             "l2_to_l1_messages": l2_to_l1_messages,
             "events": process_events(events),
             "status": status.name,
@@ -89,7 +89,7 @@ class TransactionWrapper(ABC):
 
         if status is not TxStatus.REJECTED:
             self.trace = {
-                "function_invocation": call_info.dump(),
+                "function_invocation": function_invocation.dump(),
                 "signature": tx_details.to_dict().get("signature", [])
             }
 

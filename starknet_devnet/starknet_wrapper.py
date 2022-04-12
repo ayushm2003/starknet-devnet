@@ -482,15 +482,20 @@ Exception:
         return self.parse_l1_l2_messages(l1_to_l2_messages, l2_to_l1_messages)
 
     def parse_l1_l2_messages(self, l1_raw_messages, l2_raw_messages) -> dict:
-        """Converts some of the values in the dictionaries from integer to hex"""
+        """Converts some of the values in the dictionaries from integer to hex and keys to snake_case."""
 
         for message in l1_raw_messages:
             message["args"]["selector"] = hex(message["args"]["selector"])
-            message["args"]["to_address"] = fixed_length_hex(message["args"]["toAddress"]) # L2 addresses need the leading 0
-            message["args"]["from_address"] = message["args"]["fromAddress"]
+            message["args"]["to_address"] = fixed_length_hex(message["args"].pop("toAddress")) # L2 addresses need the leading 0
+            message["args"]["from_address"] = message["args"].pop("fromAddress")
             message["args"]["payload"] = [hex(val) for val in message["args"]["payload"]]
-            del message["args"]["toAddress"]
-            del message["args"]["fromAddress"]
+
+            # change case to snake_case
+            message["transaction_hash"] = message.pop("transactionHash")
+            message["block_hash"] = message.pop("blockHash")
+            message["block_number"] = message.pop("blockNumber")
+            message["transaction_index"] = message.pop("transactionIndex")
+            message["log_index"] = message.pop("logIndex")
 
         l2_messages = []
         for message in l2_raw_messages:

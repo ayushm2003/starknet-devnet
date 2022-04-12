@@ -41,6 +41,43 @@ def run_before_and_after_test():
     devnet_proc.kill()
     l1_proc.kill()
 
+def flush():
+    """Flushes the postman messages. Returns response data"""
+    res = requests.post(
+        f"{GATEWAY_URL}/postman/flush"
+    )
+
+    return res.json()
+
+def assert_flush_response(response, from_l1, from_l2, l1_provider):
+    """Asserts that the flush response is correct"""
+
+    assert response["l1_provider"] == l1_provider
+
+    for i, l1_message in enumerate(response["consumed_messages"]["from_l1"]):
+        assert l1_message["args"]["from_address"] == from_l1[i]["args"]["from_address"]
+        assert l1_message["args"]["to_address"] == from_l1[i]["args"]["to_address"]
+        assert l1_message["args"]["payload"] == [hex(x) for x in from_l1[i]["args"]["payload"]]
+
+        # check if correct keys are present
+        expected_keys = [
+            "block_hash", "block_number", "transaction_hash", "transaction_index", "address", "event", "log_index"
+        ]
+
+        for key in expected_keys:
+            assert key in l1_message
+
+        expected_args_keys = ["selector", "nonce"]
+
+        for key in expected_args_keys:
+            assert key in l1_message["args"]
+
+    for i, l2_message in enumerate(response["consumed_messages"]["from_l2"]):
+        assert l2_message["from_address"] == from_l2[i]["from_address"].lower()
+        assert l2_message["to_address"] == from_l2[i]["to_address"].lower()
+        assert l2_message["payload"] == [hex(x) for x in from_l2[i]["payload"]]
+
+
 def init_messaging_contract():
     """Initializes the messaging contract"""
 
@@ -103,9 +140,18 @@ def init_l2_contract(l1l2_example_contract_address):
         inputs=["1","1000",l1l2_example_contract_address]
     )
 
-    # flush postman messages
-    requests.post(
-        f"{GATEWAY_URL}/postman/flush"
+    # flush L2 to L1 messages
+    flush_response = flush()
+
+    assert_flush_response(
+        response=flush_response,
+        from_l1=[],
+        from_l2=[{
+            "from_address": deploy_info["address"],
+            "to_address": l1l2_example_contract_address,
+            "payload": [0, 1, 1000] # MESSAGE_WITHDRAW, user, amount
+        }],
+        l1_provider=L1_URL
     )
 
     #assert balance
@@ -166,9 +212,21 @@ def l1_l2_message_exchange(web3, l1l2_example_contract, l2_contract_address):
 
     assert balance == 400
 
-    # flush postman messages
-    requests.post(
-        f"{GATEWAY_URL}/postman/flush"
+    # flush L1 to L2 messages
+    flush_response = flush()
+
+    assert_flush_response(
+        response=flush_response,
+        from_l1=[{
+            "address": None,
+            "args": {
+                "from_address": l1l2_example_contract.address,
+                "to_address": l2_contract_address,
+                "payload": [1, 600]  # user, amount
+            }
+        }],
+        from_l2=[],
+        l1_provider=L1_URL,
     )
 
     # assert l2 contract balance
